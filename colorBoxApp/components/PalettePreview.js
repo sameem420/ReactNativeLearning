@@ -29,7 +29,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     marginRight: 10,
-    marginLeft: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,
@@ -40,7 +39,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   heading: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
