@@ -6,9 +6,10 @@ import {
   StyleSheet,
   FlatList,
   Switch,
-  Button,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const COLORS = [
   { colorName: 'AliceBlue', hexCode: '#F0F8FF' },
@@ -16,44 +17,72 @@ const COLORS = [
   { colorName: 'Aqua', hexCode: '#00FFFF' },
 ];
 
-function ColorPaletteModal() {
-  const [colorScheme, setColorScheme] = useState('');
-  const [isEnabled, setIsEnabled] = useState(false);
+function ColorPaletteModal({ navigation }) {
+  const [paletteName, setPaletteName] = useState('');
+  const [selectedColors, setSelectedColors] = useState([]);
 
-  const toggleSwitch = (hexCode) => {
-    COLORS.map((color) => {
-      if (color.hexCode === hexCode) {
-        setIsEnabled((previousState) => !previousState);
+  const handleValueChange = useCallback(
+    (value, color) => {
+      if (value === true) {
+        setSelectedColors((colors) => [...colors, color]);
+      } else {
+        setSelectedColors((colors) => {
+          colors.filter(
+            (selectedColor) => selectedColor.colorName !== color.colorName,
+          );
+        });
       }
-    });
-  };
+    },
+    [selectedColors, setSelectedColors],
+  );
+
+  const handleSubmit = useCallback(() => {
+    if (!paletteName) {
+      Alert.alert('Please enter a palette name!');
+    } else if (selectedColors.length < 3) {
+      Alert.alert('Please add at least 3 colors!');
+    } else {
+      const newColorPalette = {
+        paletteName: paletteName,
+        colors: selectedColors,
+      };
+      navigation.navigate('Home', { newColorPalette });
+    }
+  }, [paletteName, selectedColors]);
 
   return (
-    <View>
-      <Text>Name of your Color Palette</Text>
+    <View style={styles.container}>
+      <Text style={styles.paletteLabel}>Name of Color Palette</Text>
       <TextInput
         style={styles.input}
-        value={colorScheme}
-        onChangeText={setColorScheme}
+        placeholder="Palette name"
+        value={paletteName}
+        onChangeText={setPaletteName}
       />
       <FlatList
         style={styles.list}
         data={COLORS}
         keyExtractor={(item) => item.colorName}
         renderItem={({ item }) => (
-          <View>
+          <View style={styles.color}>
             <Text>{item.colorName}</Text>
             <Switch
               trackColor={{ false: '#767577', true: '#81b0ff' }}
-              thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+              thumbColor={item ? '#f4f3f4' : '#f5dd4b'}
               ios_backgroundColor="#3e3e3e"
-              onValueChange={() => toggleSwitch(item.hexCode)}
-              value={isEnabled}
+              value={
+                !!selectedColors.find(
+                  (color) => color.colorName === item.colorName,
+                )
+              }
+              onValueChange={(selected) => handleValueChange(selected, item)}
             />
           </View>
         )}
       />
-      <Button title="Add Palette" />
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -61,9 +90,37 @@ function ColorPaletteModal() {
 const styles = StyleSheet.create({
   input: {
     height: 40,
-    margin: 12,
     borderWidth: 1,
     padding: 10,
+    marginBottom: 20,
+    borderRadius: 5,
+  },
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: 'white',
+  },
+  button: {
+    height: 40,
+    backgroundColor: 'teal',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  paletteLabel: {
+    marginBottom: 10,
+  },
+  color: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 2,
   },
 });
 
