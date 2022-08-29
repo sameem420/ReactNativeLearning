@@ -1,15 +1,17 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import RandomNumber from './RandomNumber';
 
-const Game = ({randomNumberCount}) => {
+const Game = ({randomNumberCount, initialSeconds}) => {
   const [selectedIds, setSelectedIds] = useState([]);
+  const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [randomNumbers, setRandomNumbers] = useState(
     Array.from({length: randomNumberCount}).map(
       () => 1 + Math.floor(10 * Math.random()),
     ),
   );
   const [targetValue, setTargetValue] = useState(0);
+  const intervalId = useRef();
 
   useEffect(() => {
     if (randomNumbers !== '') {
@@ -19,12 +21,28 @@ const Game = ({randomNumberCount}) => {
           .reduce((acc, curr) => acc + curr, 0),
       );
     }
+    intervalId.current = setInterval(() => {
+      setRemainingSeconds(prevRemainingSeconds => prevRemainingSeconds - 1);
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId.current);
+    };
   }, []);
+
+  useEffect(() => {
+    if (remainingSeconds === 0) {
+      clearInterval(intervalId.current);
+    }
+  }, [remainingSeconds]);
 
   const gameStatus = () => {
     const sumSelected = selectedIds.reduce((acc, curr) => {
       return acc + randomNumbers[curr];
     }, 0);
+    if (remainingSeconds === 0) {
+      return 'LOST';
+    }
     if (sumSelected < targetValue) {
       return 'PLAYING';
     }
@@ -47,6 +65,9 @@ const Game = ({randomNumberCount}) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.remainingSecondsText}>
+        Remaining Time : {remainingSeconds}
+      </Text>
       <Text style={[styles.targetValue, styles[`STATUS_${gameStatus()}`]]}>
         {targetValue}
       </Text>
@@ -97,6 +118,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 50,
+  },
+  remainingSecondsText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 15,
   },
   STATUS_PLAYING: {
     backgroundColor: 'gray',
