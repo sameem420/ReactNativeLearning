@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Button} from 'react-native';
 import RandomNumber from './RandomNumber';
 
-const Game = ({randomNumberCount, initialSeconds}) => {
+const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [randomNumbers, setRandomNumbers] = useState(
@@ -84,6 +84,11 @@ const Game = ({randomNumberCount, initialSeconds}) => {
           );
         })}
       </View>
+      {gameStatus() !== 'PLAYING' && (
+        <View style={styles.BtnPlayAgain}>
+          <Button title="Play Again" onPress={onPlayAgain} />
+        </View>
+      )}
       <Text
         style={[styles.gameStatusText, styles[`STATUS_${gameStatus()}_TEXT`]]}>
         {gameStatus()}
@@ -117,13 +122,19 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 50,
+    marginTop: 20,
+    marginBottom: 30,
   },
   remainingSecondsText: {
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 15,
+  },
+  BtnPlayAgain: {
+    marginHorizontal: 50,
+    marginTop: 50,
+    borderRadius: 25,
   },
   STATUS_PLAYING: {
     backgroundColor: 'gray',
