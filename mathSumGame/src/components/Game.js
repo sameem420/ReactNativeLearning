@@ -3,6 +3,7 @@ import {StyleSheet, Text, View, Button} from 'react-native';
 import RandomNumber from './RandomNumber';
 
 const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
+  const [gameStatus, setGameStatus] = useState('PLAYING');
   const [selectedIds, setSelectedIds] = useState([]);
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [randomNumbers, setRandomNumbers] = useState(
@@ -10,19 +11,21 @@ const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
       () => 1 + Math.floor(10 * Math.random()),
     ),
   );
-  const [targetValue, setTargetValue] = useState(0);
+
+  // TODO : Shuffle random numbers
+  // TODO : Stop the timer by game status
+  const [targetValue, setTargetValue] = useState(
+    // if(randomNumbers !== null || randomNumbers !== '') {
+    randomNumbers
+      ?.slice(0, randomNumberCount - 2)
+      .reduce((acc, curr) => acc + curr, 0),
+  );
   const intervalId = useRef();
 
   useEffect(() => {
-    if (randomNumbers !== '') {
-      setTargetValue(
-        randomNumbers
-          ?.slice(0, randomNumberCount - 2)
-          .reduce((acc, curr) => acc + curr, 0),
-      );
-    }
     intervalId.current = setInterval(() => {
       setRemainingSeconds(prevRemainingSeconds => prevRemainingSeconds - 1);
+      calcGameStatus();
     }, 1000);
 
     return () => {
@@ -31,26 +34,30 @@ const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
   }, []);
 
   useEffect(() => {
+    calcGameStatus();
     if (remainingSeconds === 0) {
+      clearInterval(intervalId.current);
+    }
+    if (gameStatus !== 'PLAYING') {
       clearInterval(intervalId.current);
     }
   }, [remainingSeconds]);
 
-  const gameStatus = () => {
+  const calcGameStatus = () => {
     const sumSelected = selectedIds.reduce((acc, curr) => {
       return acc + randomNumbers[curr];
     }, 0);
     if (remainingSeconds === 0) {
-      return 'LOST';
+      setGameStatus('LOST');
     }
     if (sumSelected < targetValue) {
-      return 'PLAYING';
+      setGameStatus('PLAYING');
     }
     if (sumSelected === targetValue) {
-      return 'WON';
+      setGameStatus('WON');
     }
     if (sumSelected > targetValue) {
-      return 'LOST';
+      setGameStatus('LOST');
     }
   };
 
@@ -68,7 +75,7 @@ const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
       <Text style={styles.remainingSecondsText}>
         Remaining Time : {remainingSeconds}
       </Text>
-      <Text style={[styles.targetValue, styles[`STATUS_${gameStatus()}`]]}>
+      <Text style={[styles.targetValue, styles[`STATUS_${gameStatus}`]]}>
         {targetValue}
       </Text>
       <View style={styles.randomNumberContainer}>
@@ -78,20 +85,20 @@ const Game = ({randomNumberCount, initialSeconds, onPlayAgain}) => {
               key={index}
               id={index}
               randomNumber={randomNumber}
-              isDisabled={isNumberSelected(index) || gameStatus() != 'PLAYING'}
+              isDisabled={isNumberSelected(index) || gameStatus != 'PLAYING'}
               onPress={selectNumber}
             />
           );
         })}
       </View>
-      {gameStatus() !== 'PLAYING' && (
+      {gameStatus !== 'PLAYING' && (
         <View style={styles.BtnPlayAgain}>
           <Button title="Play Again" onPress={onPlayAgain} />
         </View>
       )}
       <Text
-        style={[styles.gameStatusText, styles[`STATUS_${gameStatus()}_TEXT`]]}>
-        {gameStatus()}
+        style={[styles.gameStatusText, styles[`STATUS_${gameStatus}_TEXT`]]}>
+        {gameStatus}
       </Text>
     </View>
   );

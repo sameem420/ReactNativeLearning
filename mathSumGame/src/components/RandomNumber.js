@@ -1,6 +1,21 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
+// const shuffle = () => {
+//   let counter = randomNumbers.length;
+//   const randomNumbersCopy = [...randomNumbers];
+//   while (counter > 0) {
+//     let index = ~~(Math.random() * counter);
+//     counter--;
+//     // And swap the last element with it
+//     let temp = randomNumbersCopy[counter];
+//     randomNumbersCopy[counter] = randomNumbersCopy[index];
+//     randomNumbersCopy[index] = temp;
+//   }
+//   console.log(randomNumbersCopy);
+//   setRandomNumbers(randomNumbersCopy);
+// };
+
 function RandomNumber({randomNumber, isDisabled, onPress, id}) {
   const handlePress = () => {
     if (isDisabled) {
